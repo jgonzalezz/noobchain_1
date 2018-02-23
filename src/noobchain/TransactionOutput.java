@@ -13,6 +13,11 @@ public class TransactionOutput {
 	public String parentTransactionId; // the id of the transaction this output was created in
 
 	// Constructor
+	/**
+	 * @param reciepient
+	 * @param value
+	 * @param parentTransactionId
+	 */
 	public TransactionOutput(PublicKey reciepient, float value, String parentTransactionId) {
 		this.reciepient = reciepient;
 		this.value = value;

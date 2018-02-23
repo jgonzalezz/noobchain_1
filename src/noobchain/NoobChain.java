@@ -4,36 +4,39 @@ import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * @author JGonzalezLo
+ *
+ */
 public class NoobChain {
 
 	public static ArrayList<Block> blockchain = new ArrayList<Block>();
 	public static HashMap<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
 
-	public static int difficulty = 5;
+	public static int difficulty = 3;
 	public static float minimumTransaction = 0.1f;
 	public static Wallet walletA;
 	public static Wallet walletB;
 	public static Transaction genesisTransaction;
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		// add our blocks to the blockchain ArrayList:
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); // Setup Bouncey castle as a
-																						// Security Provider
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider()); // Setup Bouncey castle as a Security Provider
 
 		// Create wallets:
 		walletA = new Wallet();
 		walletB = new Wallet();
 		Wallet coinbase = new Wallet();
 
-		// create genesis transaction, which sends 100 NoobCoin to walletA:
+		// create genesis transaction, which sends 100 NoobCoin to walletA// genera las 100 monedas iniciales y se las asigna al wallet A
 		genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, 100f, null);
 		genesisTransaction.generateSignature(coinbase.privateKey); // manually sign the genesis transaction
 		genesisTransaction.transactionId = "0"; // manually set the transaction id
-		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value,
-				genesisTransaction.transactionId)); // manually add the Transactions Output
-		UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); // its important to store
-																							// our first transaction in
-																							// the UTXOs list.
+		genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value,genesisTransaction.transactionId)); // manually add the Transactions Output
+		UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); // its important to store our first transaction in the UTXOs list.
 
 		System.out.println("Creating and Mining Genesis block... ");
 		Block genesis = new Block("0");
@@ -59,22 +62,30 @@ public class NoobChain {
 		Block block3 = new Block(block2.hash);
 		System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
 		block3.addTransaction(walletB.sendFunds(walletA.publicKey, 20));
+		//addBlock(block3);
 		System.out.println("\nWalletA's balance is: " + walletA.getBalance());
 		System.out.println("WalletB's balance is: " + walletB.getBalance());
 
 		isChainValid();
+    System.out.println("");
+
+		System.out.println("Transacciones");
+		System.out.println(StringUtil.getJson(UTXOs));
+
+    System.out.println("");
+    System.out.println("Blockchain");
+		System.out.println(StringUtil.getJson(blockchain));
 
 	}
 
+  /**
+   * @return
+   */
 	public static Boolean isChainValid() {
 		Block currentBlock;
 		Block previousBlock;
 		String hashTarget = new String(new char[difficulty]).replace('\0', '0');
-		HashMap<String, TransactionOutput> tempUTXOs = new HashMap<String, TransactionOutput>(); // a temporary working
-																									// list of unspent
-																									// transactions at a
-																									// given block
-																									// state.
+		HashMap<String, TransactionOutput> tempUTXOs = new HashMap<String, TransactionOutput>(); // a temporary working list of unspent transactions at a given block state.
 		tempUTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0));
 
 		// loop through blockchain to check hashes:
@@ -148,6 +159,9 @@ public class NoobChain {
 		return true;
 	}
 
+	/**
+	 * @param newBlock
+	 */
 	public static void addBlock(Block newBlock) {
 		newBlock.mineBlock(difficulty);
 		blockchain.add(newBlock);
