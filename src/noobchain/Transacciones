@@ -1,0 +1,128 @@
+Crea una billetera simple.
+Envíe transacciones firmadas usando nuestra cadena de bloques.
+
+
+1.Preparación de una billetera
+En las monedas criptográficas, la propiedad de la moneda se transfiere en Blockchain como transacciones, 
+los participantes tienen una dirección a la que se pueden enviar y recibir fondos. En su forma básica, 
+las billeteras solo pueden almacenar estas direcciones, sin embargo, la mayoría de las billeteras también son capaces de realizar nuevas transacciones en Blockchain.
+ver /images/Wallet.png
+
+
+¿Para qué son las claves públicas y privadas?
+Para nuestro 'noobcoin', la clave pública actuará como nuestra dirección. Está bien compartir esta clave pública con otras personas para recibir el pago. 
+Nuestra clave privada se utiliza para firmar nuestras transacciones, de modo que nadie pueda gastar nuestras noobcoins que no sea el propietario de la clave privada. 
+¡Los usuarios deberán mantener su clave privada en secreto! También enviamos nuestra clave pública junto con la transacción y puede usarse para verificar que nuestra 
+firma sea válida y que los datos no hayan sido manipulados.
+ver /images/TWallet.png
+
+2. Transacciones y firmas
+Cada transacción llevará una cierta cantidad de datos:
+
+-La clave pública (dirección) del remitente de fondos.
+-La clave pública (dirección) del receptor de fondos.
+-El valor / cantidad de fondos a transferir.
+-Entradas, que son referencias a transacciones previas que prueban que el remitente tiene fondos para enviar.
+-Salidas, que muestra la cantidad de direcciones relevantes recibidas en la transacción. (Estos productos se referencian como entradas en nuevas transacciones)
+-Una firma criptográfica que demuestra que el propietario de la dirección es el que envía esta transacción y que los datos no se han modificado. 
+	(por ejemplo: evitar que un tercero cambie la cantidad enviada)
+	
+
+¿Cuál es el propósito de las firmas y cómo funcionan?
+Las firmas realizan dos tareas muy importantes en nuestra cadena de bloques:
+en primer lugar, permiten que solo el propietario gaste sus monedas , en segundo lugar, evitan que otros alteren su transacción presentada antes de que se mine un nuevo bloque 
+(en el punto de entrada).
+
+La clave privada se utiliza para firmar los datos y la clave pública se puede usar para verificar su integridad.
+
+Por ejemplo: Bob quiere enviar 2 NoobCoins a Sally, por lo que su software de billetera genera esta transacción 
+y la envía a los mineros para incluirla en el siguiente bloque. Un minero intenta cambiar el destinatario de las 2 monedas a John. 
+Sin embargo, afortunadamente, Bob había firmado los datos de la transacción con su clave privada, lo que permite a cualquier persona verificar si los datos 
+de la transacción se han cambiado utilizando la clave pública de Bob (ya que ninguna otra clave pública de personas podrá verificar la transacción).
+
+
+Las firmas serán verificadas por los mineros cuando se agregue una nueva transacción a un bloque.
+También podemos verificar firmas, cuando verificamos la validez de la cadena de bloques
+
+
+Prueba de carteras y firmas:
+Ahora que estamos casi a la mitad, probemos que algunas cosas están funcionando.
+En la clase NoobChain agreguemos algunas variables nuevas y reemplacemos el contenido de nuestro método principal  :
+
+4. Entradas y salidas 1: cómo se posee la moneda crypto ...
+Para que tengas 1 bitcoin, tienes que recibir 1 Bitcoin. 
+El libro de contabilidad realmente no agrega un bitcoin a usted y menos un bitcoin del remitente, el remitente hizo referencia a que 
+recibió previamente un bitcoin, luego se creó una salida de transacción que muestra que se envió 1 bitcoin a su dirección. 
+(Las entradas de transacción son referencias a salidas de transacciones anteriores).
+
+El saldo de su billetera es la suma de todos los productos de transacciones no utilizados que se le enviaron.
+A partir de este momento, seguiremos la convención de bitcoins y llamaremos a los resultados de transacción no utilizados : UTXO .
+Así que creemos una clase TransactionInput
+
+Las salidas de transacción mostrarán el monto final enviado a cada parte de la transacción. 
+Estos, cuando se mencionan como entradas en nuevas transacciones, actúan como prueba de que tiene monedas para enviar.
+
+5. Entradas y Salidas 2: Procesando la transacción ...
+Los bloques en la cadena pueden recibir muchas transacciones y la cadena de bloques puede ser muy, muy larga, 
+podría tomar eones procesar una nueva transacción porque tenemos que encontrar y verificar sus entradas. 
+Para evitar esto, conservaremos una colección adicional de todas las transacciones no utilizadas que pueden usarse como entradas. 
+En nuestra clase NoobChain agrega esta colección de todos los UTXO
+HashMaps nos permite usar una clave para encontrar un valor, pero deberá importar java.util.HashMap;
+
+Vamos a juntar todo para procesar la transacción con un método booleano processTransaction en nuestra clase de transacción 
+processTransaction ()
+también agregamos un método de flotación de getInputsValue.
+... Con este método, realizamos algunas comprobaciones para garantizar que la transacción sea válida, luego recopilamos entradas y generamos resultados. (Vea las líneas comentadas en el código para obtener más información).
+
+Es importante destacar que, hacia el final, descartamos Entradas de nuestra lista de UTXO' s , 
+es decir, una salida de transacción sólo puede ser utilizado una vez como una entrada 
+... Por lo tanto se debe utilizar el valor total de las entradas, por lo que el remitente envía el 'cambio' de nuevo a sí mismos.
+
+
+ver /images/transaction.png
+las flechas rojas son salidas. Tenga en cuenta que las entradas verdes son referencias a productos anteriores.
+
+Finalmente, actualice nuestra billetera a:
+Reúna nuestro saldo (recorriendo la lista de UTXO y verificando si una salida de transacción es Mine ())
+Y generar transacciones para nosotros ...
+Siéntase libre de agregar algunas otras funciones a su billetera, como mantener un registro de su historial de transacciones.
+
+6. Agregar transacciones a nuestros bloques:
+Ahora que tenemos un sistema de transacción en funcionamiento, debemos implementarlo en nuestra cadena de bloques. Deberíamos reemplazar 
+los datos inútiles que teníamos en nuestros bloques con un ArrayList de transacciones. Sin embargo, puede haber miles de transacciones en un solo bloque,
+ demasiadas para incluir en nuestro cálculo hash ... pero no se preocupe, podemos usar la raíz de Merkle de las transacciones 
+ (puede leer rápidamente sobre merkle trees aquí * pronto *).
+Agreguemos un método de ayuda para generar el merkleroot en StringUtils:
+* Reemplazaré esto pronto, con un merkleroot real, pero este método funcionará por ahora.
+
+Observe que también actualizamos nuestro constructor de bloques ya que no necesitamos pasar los datos de cadena e incluimos la raíz de merkle en el método calcular hash.
+
+Nuestro método addTransaction boolean agregará las transacciones y solo devolverá true si la transacción se ha agregado correctamente.
+
+¡Hurra todos los componentes que necesitamos para realizar transacciones en nuestra cadena de bloques ahora se ha implementado!
+
+7. The Grand Finale (En el principio no había noobcoin):
+Deberíamos probar el envío de monedas hacia y desde billeteras, y actualizar nuestra verificación de validez de blockchain. 
+Pero primero necesitamos una forma de introducir nuevas monedas en la mezcla. Hay muchas maneras de crear monedas nuevas, 
+por ejemplo en la cadena de bloques de bitcoin: los mineros pueden incluir una transacción para ellos como recompensa por cada bloque extraído. 
+Por ahora, solo lanzaremos todas las monedas que deseamos tener en el primer bloque (el bloque de genesis). Al igual que Bitcoin, codificaremos el bloque de genesis.
+
+Actualicemos nuestra clase NoobChain con todo lo que necesita:
+
+Un bloque de Genesis que lanza 100 Noobcoins a walletA.
+Una verificación de validez de cadena actualizada que tiene en cuenta las transacciones.
+Algunas transacciones de prueba para ver que todo está funcionando.
+
+Las carteras ahora pueden enviar fondos de forma segura a su blockchain, solo si tienen fondos para enviar. Eso significa que tiene su propia criptomoneda local *.
+
+
+Ha creado con éxito su propia criptomoneda (¡algo así!). Tu blockchain ahora:
+
+Permite a los usuarios crear carteras con 'nuevo Wallet ();'
+Proporciona billeteras con claves públicas y privadas mediante criptografía de curva elíptica.
+Asegura la transferencia de fondos, mediante el uso de un algoritmo de firma digital para probar la propiedad.
+Y finalmente permita a los usuarios realizar transacciones en su blockchain con 'Block.addTransaction (walletA.sendFunds (walletB.publicKey, 20));'
+
+
+
+
